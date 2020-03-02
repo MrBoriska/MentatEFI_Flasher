@@ -201,6 +201,27 @@ void Flasher::send_flash_from_file(QString hexFilePath, int page_size) {
                 // todo: необходимо учесть ситуацию, если сумма не совпала
                 send_checksumm(ck1,ck2);
             }
+            // address record type
+            if (QString(temp) == "02") {
+
+                if (page_count != 0) {
+                    emit infoCritical(tr("Error"), "Предыдущая страница еще не окончена!");
+                    this->closeSerialPort();
+                    return;
+                }
+
+                qDebug() << "last address" << addressW;
+
+                // data address
+                uint16_t addr_offset = file.read(4).toUInt(Q_NULLPTR, 16);
+                readed += 4;
+                addressW = (addr_offset << 4)/2;
+                qDebug() << "new address: " << addressW;
+
+                // skip std cksum ans endline symbols
+                step_bytes = 1;
+            }
+
         }
         if (current_progress != int(100*readed/hexfilesize)) {
             emit changeProgress(current_progress = 100*readed/hexfilesize);
@@ -313,14 +334,15 @@ bool Flasher::go_boot(int mode) {
         data[3] = mode;
 
     serial->write((char*)data,4);
-
-    // Ждем пока байтики отправятся
     serial->waitForBytesWritten(10000);
 
     // На всякий ждем ответ от мк (не дольше 1000мс)
+    // Нужно на случай, если входящий буфер не пуст.
     serial->waitForReadyRead(1000);
-    qDebug() << "sended " << serial->readAll();
+    qDebug() << "clean input buffer: " << serial->readAll();
 
+    // Проверка статуса (в бут режиме или нет)
+    this->get_status(false);
 
     this->closeSerialPort();
     emit changeProgress(0);
@@ -398,15 +420,17 @@ bool Flasher::erase_chip() {
  * @brief Flasher::get_status
  * @return
  */
-QString Flasher::get_status() {
+QString Flasher::get_status(bool open_serial) {
     qDebug() << "get status";
 
     emit changeProgress(-1);
 
-    this->closeSerialPort();
-    if (!this->openSerialPort(this->port_name)) {
-        emit changeProgress(0);
-        return "no connect";
+    if (open_serial) {
+        this->closeSerialPort();
+        if (!this->openSerialPort(this->port_name)) {
+            emit changeProgress(0);
+            return "no connect";
+        }
     }
 
     char data[] = {0x53, 0x0d}; // специально добавлен ненужный символ в конец,
@@ -422,7 +446,7 @@ QString Flasher::get_status() {
                                                             // и заодно говорит, что закончил отправку :)
             recv.remove(recv.size()-1,1); // удалим его из вывода
             qDebug() << "success!!! " << recv;
-            this->closeSerialPort();
+            if (open_serial) this->closeSerialPort();
             emit changeProgress(0);
             return recv;
         }
@@ -431,7 +455,7 @@ QString Flasher::get_status() {
         qDebug() << "recieve without end symbol: " << recv;
     }
     qDebug() << "no data";
-    this->closeSerialPort();
+    if (open_serial) this->closeSerialPort();
     emit changeProgress(0);
     return "no data";
 }

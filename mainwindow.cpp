@@ -196,7 +196,8 @@ void MainWindow::on_getStatus_clicked()
     // Запуск в другом потоке
     QFuture <QString> future = QtConcurrent::run(
         flasher,
-        &Flasher::get_status
+        &Flasher::get_status,
+        true
     );
     watcher->setFuture(future);
 }

@@ -25,7 +25,7 @@ public:
 public slots:
     bool go_boot(int mode);
     bool leave_boot();
-    QString get_status();
+    QString get_status(bool open_serial = true);
     void send_flash_from_file(QString hexFilePath, int page_size);
 
 signals:
