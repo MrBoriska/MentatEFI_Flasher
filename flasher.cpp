@@ -2,7 +2,6 @@
 #include <QDebug>
 
 #include <QThread>
-
 #include <QtSerialPort/QSerialPortInfo>
 
 Flasher::Flasher(QObject *parent) : QObject(parent)
@@ -148,16 +147,22 @@ void Flasher::send_flash_from_file(QString hexFilePath, int page_size) {
 
                             // init write page
                             char command[] = {'D','k','k'};
-                            //qDebug() << QByteArray(command,3).toHex(' ');
-                            serial->write(command, 3);
-                            serial->waitForBytesWritten(10000);
+                            #ifdef DEBUG_MODE
+                                qDebug() << QByteArray(command,3).toHex();
+                            #else
+                                serial->write(command, 3);
+                                serial->waitForBytesWritten(10000);
+                            #endif
                         }
 
                         // send bytes to EFI
-                        //qDebug() << QByteArray(rev_data,2).toHex(' ');
                         char rev_data[] = {char(data.b[0]),char(data.b[1])};
-                        serial->write(rev_data, 2);
-                        serial->waitForBytesWritten(10000);
+                        #ifdef DEBUG_MODE
+                            qDebug() << QByteArray(rev_data,2).toHex();
+                        #else
+                            serial->write(rev_data, 2);
+                            serial->waitForBytesWritten(10000);
+                        #endif
 
                         ck1 += data.w;
                         ck2 ^= data.w;
@@ -189,9 +194,12 @@ void Flasher::send_flash_from_file(QString hexFilePath, int page_size) {
                     data.b[0] = 0xFF;
                     data.b[1] = 0xFF;
 
-                    //qDebug() << QByteArray((char *)data.b,2).toHex(' ');
-                    serial->write((char *)data.b, 2);
-                    serial->waitForBytesWritten(10000);
+                    #ifdef DEBUG_MODE
+                        //qDebug() << QByteArray((char *)data.b,2).toHex();
+                    #else
+                        serial->write((char *)data.b, 2);
+                        serial->waitForBytesWritten(10000);
+                    #endif
 
                     ck1 += data.w;
                     ck2 ^= data.w;
@@ -247,9 +255,13 @@ bool Flasher::send_address(uint16_t addressW) {
 
     char data[] = {0x41, char(addr.b[1]), char(addr.b[0])};
 
-    qDebug() << QByteArray(data,3).toHex();
-    serial->write(data, 3);
 
+    #ifdef DEBUG_MODE
+        qDebug() << QByteArray(data,3).toHex();
+        return true;
+    #endif
+
+    serial->write(data, 3);
     serial->waitForBytesWritten(10000);
 
     while (serial->waitForReadyRead(1000)) {
@@ -260,6 +272,7 @@ bool Flasher::send_address(uint16_t addressW) {
         }
     }
     qDebug() << "error " << serial->readAll();
+
     return false;
 }
 
@@ -277,26 +290,27 @@ bool Flasher::send_checksumm(uint16_t ck1, uint16_t ck2) {
                    char((ck2 >> 8)),
                    char((ck2 & 0xFF))};
 
-    //qDebug() << QByteArray(data,4).toHex(' ');
-    serial->write(data, 4);
+    #ifdef DEBUG_MODE
+        qDebug() << QByteArray(data,4).toHex();
+        return true;
+    #endif
 
+    serial->write(data, 4);
     serial->waitForBytesWritten(10000);
 
     QByteArray recv;
     while (serial->waitForReadyRead(1000)) {
         recv.append(serial->readAll());
 
-    //    qDebug() << QByteArray(data);
+        //uint8_t rck1 = recv.mid(0,1).toUInt(Q_NULLPTR, 16);
+        //uint8_t rck2 = recv.mid(1,1).toUInt(Q_NULLPTR, 16);
+        //uint8_t rck3 = recv.mid(2,1).toUInt(Q_NULLPTR, 16);
+        //uint8_t rck4 = recv.mid(3,1).toUInt(Q_NULLPTR, 16);
 
-    //    //uint8_t rck1 = recv.mid(0,1).toUInt(Q_NULLPTR, 16);
-    //    //uint8_t rck2 = recv.mid(1,1).toUInt(Q_NULLPTR, 16);
-    //    //uint8_t rck3 = recv.mid(2,1).toUInt(Q_NULLPTR, 16);
-    //    //uint8_t rck4 = recv.mid(3,1).toUInt(Q_NULLPTR, 16);
-
-    //    //if (rck1 != (ck1 >> 8)) return false;
-    //    //if (rck2 != (ck1 & 0xFF)) return false;
-    //    //if (rck3 != (ck2 >> 8)) return false;
-    //    //if (rck4 != (ck2 & 0xFF)) return false;
+        //if (rck1 != (ck1 >> 8)) return false;
+        //if (rck2 != (ck1 & 0xFF)) return false;
+        //if (rck3 != (ck2 >> 8)) return false;
+        //if (rck4 != (ck2 & 0xFF)) return false;
 
         if (recv.size() && recv.at(recv.size()-1) == 0x0d) {
             qDebug() << "checksumm right!";
@@ -398,8 +412,12 @@ bool Flasher::erase_chip() {
     emit changeProgress(-1);
 
     char data[] = {0x65};
-    serial->write((char*)data,1);
 
+    #ifdef DEBUG_MODE
+        return true;
+    #endif
+
+    serial->write((char*)data,1);
     serial->waitForBytesWritten(10000);
 
     // Ждем очистки...

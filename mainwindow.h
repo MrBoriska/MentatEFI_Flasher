@@ -8,6 +8,7 @@
 #include <inttypes.h>
 #include <QTextStream>
 
+#include "config.h"
 #include "flasher.h"
 
 namespace Ui {

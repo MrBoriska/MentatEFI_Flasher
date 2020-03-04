@@ -31,6 +31,7 @@ SOURCES += main.cpp \
            mainwindow.cpp
 
 HEADERS += flasher.h \
+           config.h \
            mainwindow.h
 
 FORMS += mainwindow.ui

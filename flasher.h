@@ -6,6 +6,7 @@
 #include <QSerialPort>
 #include <stdint.h>
 
+#include "config.h"
 // simplify the bytes to words translation
 typedef union {
     uint16_t w;
