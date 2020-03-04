@@ -101,6 +101,7 @@ void Flasher::send_flash_from_file(QString hexFilePath, int page_size) {
     int page_count = 0;
 
     while (!file.atEnd()) {
+        QDebug debug = qDebug();
         // Сначала пропускаем спец симовол начала строки
         if (step_bytes == 1) {
             temp = file.read(step_bytes);
@@ -142,26 +143,32 @@ void Flasher::send_flash_from_file(QString hexFilePath, int page_size) {
                             ck1 = ck2 = addressW;
 
                             if (!send_address(addressW)) {
-                                qDebug() << "send address error!";
+                                emit infoCritical(tr("Error"), "Ошибка при отправке адреса страницы!");
+
+                                file.close();
+                                this->closeSerialPort();
+                                return;
                             }
 
                             // init write page
                             char command[] = {'D','k','k'};
-                            #ifdef DEBUG_MODE
-                                qDebug() << QByteArray(command,3).toHex();
-                            #else
-                                serial->write(command, 3);
-                                serial->waitForBytesWritten(10000);
+
+                            debug << QByteArray(command,3).toHex() << "\n";
+
+                            #ifndef DEBUG_MODE
+                            serial->write(command, 3);
+                            serial->waitForBytesWritten(10000);
                             #endif
                         }
 
                         // send bytes to EFI
                         char rev_data[] = {char(data.b[0]),char(data.b[1])};
-                        #ifdef DEBUG_MODE
-                            qDebug() << QByteArray(rev_data,2).toHex();
-                        #else
-                            serial->write(rev_data, 2);
-                            serial->waitForBytesWritten(10000);
+
+                        debug << QByteArray(rev_data,2).toHex();
+
+                        #ifndef DEBUG_MODE
+                        serial->write(rev_data, 2);
+                        serial->waitForBytesWritten(10000);
                         #endif
 
                         ck1 += data.w;
@@ -170,8 +177,16 @@ void Flasher::send_flash_from_file(QString hexFilePath, int page_size) {
                         addressW += 1;
 
                         if (page_count == page_size-1) {
-                            // todo: необходимо учесть ситуацию, если сумма не совпала
-                            send_checksumm(ck1,ck2);
+                            debug << "\n";
+                            debug = qDebug();
+
+                            if (!send_checksumm(ck1,ck2)) {
+                                emit infoCritical(tr("Error"), "Ошибка при проверке контрольной суммы!");
+
+                                file.close();
+                                this->closeSerialPort();
+                                return; // todo: необходимо осуществлять повторные несколько попыток отправки страницы
+                            }
 
                             page_count = 0;
 
@@ -188,17 +203,17 @@ void Flasher::send_flash_from_file(QString hexFilePath, int page_size) {
                 step_bytes = 1;
             }
             // end of file record type
-            if (QString(temp) == "01") {
+            else if (QString(temp) == "01") {
                 // fill page
                 while (page_count < page_size) {
                     data.b[0] = 0xFF;
                     data.b[1] = 0xFF;
 
-                    #ifdef DEBUG_MODE
-                        //qDebug() << QByteArray((char *)data.b,2).toHex();
-                    #else
-                        serial->write((char *)data.b, 2);
-                        serial->waitForBytesWritten(10000);
+                    debug << QByteArray((char *)data.b,2).toHex();
+
+                    #ifndef DEBUG_MODE
+                    serial->write((char *)data.b, 2);
+                    serial->waitForBytesWritten(10000);
                     #endif
 
                     ck1 += data.w;
@@ -206,25 +221,37 @@ void Flasher::send_flash_from_file(QString hexFilePath, int page_size) {
                     page_count++;
                 }
 
-                // todo: необходимо учесть ситуацию, если сумма не совпала
-                send_checksumm(ck1,ck2);
+                debug << "\n";
+                debug = qDebug();
+
+                if (!send_checksumm(ck1,ck2)) {
+                    emit infoCritical(tr("Error"), "Ошибка при проверке контрольной суммы!");
+
+                    file.close();
+                    this->closeSerialPort();
+                    return; // todo: необходимо осуществлять повторные несколько попыток отправки страницы
+                }
             }
             // address record type
-            if (QString(temp) == "02") {
+            else if (QString(temp) == "02") {
 
                 if (page_count != 0) {
-                    emit infoCritical(tr("Error"), "Предыдущая страница еще не окончена!");
-                    this->closeSerialPort();
-                    return;
+                    emit infoWarning(tr("Warning"), "Предыдущая страница еще не окончена!");
+                    //todo: возможно, нужно заполнить остаток страницы 0xFF
                 }
-
-                qDebug() << "last address" << addressW;
 
                 // data address
                 uint16_t addr_offset = file.read(4).toUInt(Q_NULLPTR, 16);
                 readed += 4;
                 addressW = (addr_offset << 4)/2;
-                qDebug() << "new address: " << addressW;
+
+                // skip std cksum ans endline symbols
+                step_bytes = 1;
+            }
+            else {
+                qDebug() << "Unsupported record type: " << QString(temp) << ". Ignoring!";
+
+                file.read(data_len*2).toUInt(Q_NULLPTR, 16);
 
                 // skip std cksum ans endline symbols
                 step_bytes = 1;
@@ -237,9 +264,8 @@ void Flasher::send_flash_from_file(QString hexFilePath, int page_size) {
     }
 
 
-    file.close();
-
     emit changeProgress(100);
+    file.close();
     this->closeSerialPort();
 }
 
@@ -249,29 +275,33 @@ void Flasher::send_flash_from_file(QString hexFilePath, int page_size) {
  * @return
  */
 bool Flasher::send_address(uint16_t addressW) {
-    qDebug() << "send address...";
+
+    QDebug debug = qDebug();
+    debug << "send address...";
+
     W2B addr;
     addr.w = addressW;
 
     char data[] = {0x41, char(addr.b[1]), char(addr.b[0])};
 
-
     #ifdef DEBUG_MODE
-        qDebug() << QByteArray(data,3).toHex();
+        debug << QByteArray(data,3).toHex();
         return true;
     #endif
 
     serial->write(data, 3);
     serial->waitForBytesWritten(10000);
+    debug << "...";
 
     while (serial->waitForReadyRead(1000)) {
+        debug << "..";
         QByteArray recv = serial->readAll();
         if (recv.size() && recv.at(recv.size()-1) == 0x0d) {
-            qDebug() << "success";
+            debug << "success";
             return true;
         }
     }
-    qDebug() << "error " << serial->readAll();
+    debug << "error with input buffer: " << serial->readAll();
 
     return false;
 }
@@ -283,7 +313,8 @@ bool Flasher::send_address(uint16_t addressW) {
  * @return
  */
 bool Flasher::send_checksumm(uint16_t ck1, uint16_t ck2) {
-    qDebug() << "send checksumm";
+
+    qDebug() << "send checksumm...";
 
     char data[] = {char((ck1 >> 8)),
                    char((ck1 & 0xFF)),
@@ -297,9 +328,11 @@ bool Flasher::send_checksumm(uint16_t ck1, uint16_t ck2) {
 
     serial->write(data, 4);
     serial->waitForBytesWritten(10000);
+    qDebug() << "msg sended...";
 
     QByteArray recv;
     while (serial->waitForReadyRead(1000)) {
+        qDebug() << "...";
         recv.append(serial->readAll());
 
         //uint8_t rck1 = recv.mid(0,1).toUInt(Q_NULLPTR, 16);
@@ -316,14 +349,12 @@ bool Flasher::send_checksumm(uint16_t ck1, uint16_t ck2) {
             qDebug() << "checksumm right!";
             return true;
         } else if (recv.size() && recv.at(recv.size()-1) == 'N') {
-            qDebug() << "checksumm FAIL!!";
-
-            emit infoCritical("checksumm fail!!", "fail");
+            qDebug() << "checksumm FAIL!";
             return false;
         }
     }
 
-    qDebug() << "not responce error!!" << serial->readAll();
+    qDebug() << "invalid responce: " << serial->readAll();
     return false;
 }
 
@@ -333,6 +364,8 @@ bool Flasher::send_checksumm(uint16_t ck1, uint16_t ck2) {
  */
 bool Flasher::go_boot(int mode) {
 
+    qDebug() << "go boot mode...";
+
     emit changeProgress(-1);
 
     this->closeSerialPort();
@@ -341,26 +374,25 @@ bool Flasher::go_boot(int mode) {
         return false;
     }
 
-    qDebug() << "go boot mode";
-
     char data[] = {0x4F, 0x00, 0x19, 0x01};
     if (mode == 0x01 || mode == 0x02)
         data[3] = mode;
 
     serial->write((char*)data,4);
     serial->waitForBytesWritten(10000);
+    qDebug() << "msg sended...";
 
     // На всякий ждем ответ от мк (не дольше 1000мс)
     // Нужно на случай, если входящий буфер не пуст.
     serial->waitForReadyRead(1000);
-    qDebug() << "clean input buffer: " << serial->readAll();
+    qDebug() << "clean input buffer: " << serial->readAll() << " ok";
 
     // Проверка статуса (в бут режиме или нет)
-    this->get_status(false);
+    QString ret = this->get_status(false);
 
     this->closeSerialPort();
     emit changeProgress(0);
-    return true;
+    return (ret != "no data");
 }
 
 /**
@@ -368,7 +400,8 @@ bool Flasher::go_boot(int mode) {
  * @return
  */
 bool Flasher::leave_boot() {
-    qDebug() << "leave boot mode";
+
+    qDebug() << "leaving boot mode...";
 
     emit changeProgress(-1);
 
@@ -380,21 +413,22 @@ bool Flasher::leave_boot() {
 
     char data[] = {0x45};
     serial->write((char*)data,1);
-
     serial->waitForBytesWritten(10000);
+    qDebug() << "msg sended...";
 
     // Ждем выхода
     QByteArray recv;
     while (serial->waitForReadyRead(1000)) {
+        qDebug() << "...";
         recv.append(serial->readAll());
         if (recv.size() && recv.at(recv.size()-1) == 0x0d) {
-            qDebug() << "leave boot success " << recv;
+            qDebug() << "success " << recv;
             this->closeSerialPort();
             emit changeProgress(0);
             return true;
         }
     }
-    qDebug() << "failed to leave boot mode!";
+    qDebug() << "failed!";
     emit infoCritical(tr("Error"), "Failed to leave boot mode!");
 
     this->closeSerialPort();
@@ -407,7 +441,8 @@ bool Flasher::leave_boot() {
  * @return
  */
 bool Flasher::erase_chip() {
-    qDebug() << "erase chip";
+
+    qDebug() << "erasing chip...";
 
     emit changeProgress(-1);
 
@@ -419,17 +454,19 @@ bool Flasher::erase_chip() {
 
     serial->write((char*)data,1);
     serial->waitForBytesWritten(10000);
+    qDebug() << "msg sended...";
 
     // Ждем очистки...
     while (serial->waitForReadyRead(10000)) {
+        qDebug() << "...";
         QByteArray recv = serial->readAll();
         if (recv.size() && recv.at(recv.size()-1) == 0x0d) {
-            qDebug() << "chip erase success ";
+            qDebug() << "success!";
             emit changeProgress(0);
             return true;
         }
     }
-    qDebug() << "chip erase error " << serial->readAll();
+    qDebug() << "error " << serial->readAll();
     emit changeProgress(0);
     return false;
 }
@@ -439,7 +476,8 @@ bool Flasher::erase_chip() {
  * @return
  */
 QString Flasher::get_status(bool open_serial) {
-    qDebug() << "get status";
+
+    qDebug() << "getting status...";
 
     emit changeProgress(-1);
 
@@ -454,16 +492,17 @@ QString Flasher::get_status(bool open_serial) {
     char data[] = {0x53, 0x0d}; // специально добавлен ненужный символ в конец,
                                 // чтобы мк ругнулся на него последним символом в ответе
     serial->write((char*)data,2);
-
     serial->waitForBytesWritten(10000);
+    qDebug() << "msg sended...";
 
     QByteArray recv;
     while (serial->waitForReadyRead(2000)) {
+        qDebug() << "...";
         recv.append(serial->readAll());
         if (recv.size() && recv.at(recv.size()-1) == '?') { // этим символом мк ругается
                                                             // и заодно говорит, что закончил отправку :)
             recv.remove(recv.size()-1,1); // удалим его из вывода
-            qDebug() << "success!!! " << recv;
+            qDebug() << "success! " << recv;
             if (open_serial) this->closeSerialPort();
             emit changeProgress(0);
             return recv;
@@ -472,7 +511,8 @@ QString Flasher::get_status(bool open_serial) {
     if (recv.size() > 0) {
         qDebug() << "recieve without end symbol: " << recv;
     }
-    qDebug() << "no data";
+
+    qDebug() << "no data!";
     if (open_serial) this->closeSerialPort();
     emit changeProgress(0);
     return "no data";
