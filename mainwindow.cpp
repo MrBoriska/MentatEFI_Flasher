@@ -181,12 +181,8 @@ void MainWindow::on_getStatus_clicked()
         }
         if (info != "no data") {
             ui->bootTriggerButton->setChecked(true);
-            ui->filePathEdit->setEnabled(true);
-            ui->searchPath->setEnabled(true);
         } else {
             ui->bootTriggerButton->setChecked(false);
-            ui->filePathEdit->setEnabled(false);
-            ui->searchPath->setEnabled(false);
         }
 
         // важно!
