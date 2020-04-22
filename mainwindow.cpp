@@ -36,6 +36,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->flashButton->setEnabled(false);
     ui->pageSizeSpin->setEnabled(false);
 
+    // Список поддерживаемых протоколов
+    ui->protocolSelector->clear();
+    ui->protocolSelector->addItem("CAN Style", Flasher::CAN_STYLE_PROTO);
+    ui->protocolSelector->addItem("Old", Flasher::OLD_PROTO);
+
     // Получение списка COM портов
     fillPortsInfo();
 }
@@ -237,4 +242,9 @@ void MainWindow::infoDebug(QString info)
 void MainWindow::on_comSelector_currentIndexChanged(const QString &port_name)
 {
     flasher->setPortName(port_name);
+}
+
+void MainWindow::on_protocolSelector_currentIndexChanged(int index)
+{
+
 }

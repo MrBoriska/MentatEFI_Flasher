@@ -8,6 +8,7 @@ Flasher::Flasher(QObject *parent) : QObject(parent)
 {
     port_name = "";
     serial = 0;
+    protocol_type = OLD_PROTO;
 }
 
 /**
@@ -63,6 +64,11 @@ void Flasher::closeSerialPort()
 
 void Flasher::setPortName(QString port_name) {
     this->port_name = port_name;
+}
+
+void Flasher::setProtocol(PROTOCOLS proto)
+{
+    this->protocol_type = proto;
 }
 
 /**
@@ -374,12 +380,20 @@ bool Flasher::go_boot(int mode) {
         return false;
     }
 
-    char data[] = {0x4F, 0x00, 0x19, 0x01};
-    if (mode == 0x01 || mode == 0x02)
-        data[3] = mode;
+    if (this->protocol_type == CAN_STYLE_PROTO) {
+        //char data[] = {0x0F, 0x00, 0x19, 0x01, 0x19};
+        //serial->write((char*)data,5);
+        char data[] = {'F'};
+        serial->write((char*)data,1);
+        serial->waitForBytesWritten(10000);
+    } else {
+        char data[] = {0x4F, 0x00, 0x19, 0x01};
+        if (mode == 0x01 || mode == 0x02)
+            data[3] = mode;
+        serial->write((char*)data,4);
+        serial->waitForBytesWritten(10000);
+    }
 
-    serial->write((char*)data,4);
-    serial->waitForBytesWritten(10000);
     qDebug() << "msg sended...";
 
     // На всякий ждем ответ от мк (не дольше 1000мс)

@@ -17,11 +17,16 @@ class Flasher : public QObject
 {
     Q_OBJECT
 public:
+    enum PROTOCOLS {
+      CAN_STYLE_PROTO, OLD_PROTO
+    };
+
     explicit Flasher(QObject *parent = 0);
 
     QSerialPort *serial;
 
     void setPortName(QString port_name);
+    void setProtocol(PROTOCOLS proto);
 
 public slots:
     bool go_boot(int mode);
@@ -39,6 +44,7 @@ signals:
 
 private:
     QString port_name;
+    PROTOCOLS protocol_type;
 
     bool send_address(uint16_t addressW);
     bool erase_chip();
