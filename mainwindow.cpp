@@ -12,6 +12,9 @@
 #include <QElapsedTimer>
 #include <QDateTime>
 
+#include <QDragEnterEvent>
+#include <QMimeData>
+
 #include <QtSerialPort/QSerialPortInfo>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -35,6 +38,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->searchPath->setEnabled(true);
     ui->flashButton->setEnabled(false);
     ui->pageSizeSpin->setEnabled(false);
+
+    setAcceptDrops(true);
 
     // Получение списка COM портов
     fillPortsInfo();
@@ -78,16 +83,20 @@ void MainWindow::on_searchPath_clicked()
 
     qDebug() << fileName;
 
-    ui->filePathEdit->setText(fileName);
+    this->set_flash_file_url(fileName);
+}
 
-    if (!fileName.isEmpty()) {
+void MainWindow::set_flash_file_url(QString filename)
+{
+    ui->filePathEdit->setText(filename);
+
+    if (!filename.isEmpty()) {
         ui->flashButton->setEnabled(true);
         ui->pageSizeSpin->setEnabled(true);
     } else {
         ui->flashButton->setEnabled(false);
         ui->pageSizeSpin->setEnabled(false);
     }
-
 }
 
 void MainWindow::on_flashButton_clicked()
@@ -238,3 +247,21 @@ void MainWindow::on_comSelector_currentIndexChanged(const QString &port_name)
 {
     flasher->setPortName(port_name);
 }
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *e)
+{
+    if (e->mimeData()->hasUrls()) {
+        e->acceptProposedAction();
+    }
+}
+
+void MainWindow::dropEvent(QDropEvent *e)
+{
+    foreach (const QUrl &url, e->mimeData()->urls()) {
+        QString fileName = url.toLocalFile();
+        qDebug() << "Dropped file:" << fileName;
+        this->set_flash_file_url(fileName);
+        break;
+    }
+}
+

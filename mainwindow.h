@@ -23,7 +23,6 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    void fillPortsInfo();
 private slots:
     void on_searchPath_clicked();
     void on_flashButton_clicked();
@@ -37,6 +36,8 @@ private slots:
     void infoDebug(QString info);
 
     void on_comSelector_currentIndexChanged(const QString &port_name);
+    void dropEvent(QDropEvent *e);
+    void dragEnterEvent(QDragEnterEvent *e);
 
 signals:
     void flashing_command(QString hexFilePath, int page_size);
@@ -44,6 +45,9 @@ signals:
 private:
     Ui::MainWindow *ui;
     Flasher *flasher;
+
+    void fillPortsInfo();
+    void set_flash_file_url(QString filename);
 };
 
 #endif // MAINWINDOW_H
