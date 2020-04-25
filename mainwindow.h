@@ -36,10 +36,10 @@ private slots:
     void infoDebug(QString info);
 
     void on_comSelector_currentIndexChanged(const QString &port_name);
+    void on_protocolSelector_currentIndexChanged(int index);
+
     void dropEvent(QDropEvent *e);
     void dragEnterEvent(QDragEnterEvent *e);
-
-    void on_protocolSelector_currentIndexChanged(int index);
 
 signals:
     void flashing_command(QString hexFilePath, int page_size);

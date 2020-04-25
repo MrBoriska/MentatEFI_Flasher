@@ -17,6 +17,7 @@ class Flasher : public QObject
 {
     Q_OBJECT
 public:
+
     enum PROTOCOLS {
       CAN_STYLE_PROTO, OLD_PROTO
     };
@@ -53,5 +54,7 @@ private:
     void closeSerialPort();
 
 };
+
+Q_DECLARE_METATYPE(Flasher::PROTOCOLS)
 
 #endif // FLASHER_H

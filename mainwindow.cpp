@@ -43,7 +43,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->protocolSelector->clear();
     ui->protocolSelector->addItem("CAN Style", Flasher::CAN_STYLE_PROTO);
     ui->protocolSelector->addItem("Old", Flasher::OLD_PROTO);
-    
+
     setAcceptDrops(true);
 
     // Получение списка COM портов
@@ -255,7 +255,9 @@ void MainWindow::on_comSelector_currentIndexChanged(const QString &port_name)
 
 void MainWindow::on_protocolSelector_currentIndexChanged(int index)
 {
-
+    flasher->setProtocol(
+        ui->protocolSelector->itemData(index).value<Flasher::PROTOCOLS>()
+    );
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *e)
