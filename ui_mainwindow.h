@@ -82,6 +82,7 @@ public:
 
         progressBar = new QProgressBar(centralWidget);
         progressBar->setObjectName(QStringLiteral("progressBar"));
+        progressBar->setMaximum(100);
         progressBar->setValue(0);
         progressBar->setTextVisible(true);
         progressBar->setOrientation(Qt::Horizontal);
@@ -129,6 +130,7 @@ public:
 
         comSelector = new QComboBox(centralWidget);
         comSelector->setObjectName(QStringLiteral("comSelector"));
+        comSelector->setMaximumSize(QSize(125, 16777215));
 
         horizontalLayout_2->addWidget(comSelector);
 

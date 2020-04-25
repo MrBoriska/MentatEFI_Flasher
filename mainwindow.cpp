@@ -70,7 +70,7 @@ void MainWindow::fillPortsInfo()
              << (info.vendorIdentifier() ? QString::number(info.vendorIdentifier(), 16) : "n/a")
              << (info.productIdentifier() ? QString::number(info.productIdentifier(), 16) : "n/a");
 
-        ui->comSelector->addItem(list.first(), list);
+        ui->comSelector->addItem(info.portName() + " (" + list.at(1) + ")", list);
     }
 }
 
@@ -243,9 +243,11 @@ void MainWindow::infoDebug(QString info)
     qDebug() << info;
 }
 
-void MainWindow::on_comSelector_currentIndexChanged(const QString &port_name)
+void MainWindow::on_comSelector_currentIndexChanged(int index)
 {
-    flasher->setPortName(port_name);
+    flasher->setPortName(
+        ui->comSelector->itemData(index).toList()[0].toString()
+    );
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *e)
@@ -264,4 +266,3 @@ void MainWindow::dropEvent(QDropEvent *e)
         break;
     }
 }
-
