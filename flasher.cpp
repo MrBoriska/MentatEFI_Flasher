@@ -381,10 +381,10 @@ bool Flasher::go_boot(int mode) {
     }
 
     if (this->protocol_type == CAN_STYLE_PROTO) {
-        //char data[] = {0x0F, 0x00, 0x19, 0x01, 0x19};
-        //serial->write((char*)data,5);
-        char data[] = {'F'};
-        serial->write((char*)data,1);
+        uint8_t data[] = {0x0F, 0x42, 0xBD, 0xF2, 0x1C};
+        serial->write((char*)data,5);
+        //char data[] = {'F'};
+        //serial->write((char*)data,1);
         serial->waitForBytesWritten(10000);
     } else {
         char data[] = {0x4F, 0x00, 0x19, 0x01};
