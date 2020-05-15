@@ -215,7 +215,7 @@ public:
 
     void retranslateUi(QMainWindow *MainWindow)
     {
-        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MentatEFI Flasher", Q_NULLPTR));
+        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MEMO ECU Flasher", Q_NULLPTR));
         bootTriggerButton->setText(QApplication::translate("MainWindow", "Boot mode", Q_NULLPTR));
         filePathEdit->setPlaceholderText(QApplication::translate("MainWindow", "Path to *.hex flash file", Q_NULLPTR));
         searchPath->setText(QApplication::translate("MainWindow", "Search", Q_NULLPTR));
