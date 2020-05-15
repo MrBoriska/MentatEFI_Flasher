@@ -2,3 +2,4 @@
 build_windows/
 
 *.user
+*.pro.user.*

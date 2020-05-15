@@ -36,6 +36,8 @@ private slots:
     void infoDebug(QString info);
 
     void on_comSelector_currentIndexChanged(int index);
+    void on_protocolSelector_currentIndexChanged(int index);
+
     void dropEvent(QDropEvent *e);
     void dragEnterEvent(QDragEnterEvent *e);
 

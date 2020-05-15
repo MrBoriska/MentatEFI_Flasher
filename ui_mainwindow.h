@@ -48,6 +48,9 @@ public:
     QLabel *label;
     QComboBox *comSelector;
     QPushButton *getStatus;
+    QHBoxLayout *horizontalLayout_5;
+    QLabel *label_3;
+    QComboBox *protocolSelector;
     QHBoxLayout *horizontalLayout_3;
     QLabel *label_2;
     QSpinBox *pageSizeSpin;
@@ -142,6 +145,23 @@ public:
 
         verticalLayout_2->addLayout(horizontalLayout_2);
 
+        horizontalLayout_5 = new QHBoxLayout();
+        horizontalLayout_5->setSpacing(6);
+        horizontalLayout_5->setObjectName(QStringLiteral("horizontalLayout_5"));
+        label_3 = new QLabel(centralWidget);
+        label_3->setObjectName(QStringLiteral("label_3"));
+        label_3->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+
+        horizontalLayout_5->addWidget(label_3);
+
+        protocolSelector = new QComboBox(centralWidget);
+        protocolSelector->setObjectName(QStringLiteral("protocolSelector"));
+
+        horizontalLayout_5->addWidget(protocolSelector);
+
+
+        verticalLayout_2->addLayout(horizontalLayout_5);
+
         horizontalLayout_3 = new QHBoxLayout();
         horizontalLayout_3->setSpacing(6);
         horizontalLayout_3->setObjectName(QStringLiteral("horizontalLayout_3"));
@@ -201,6 +221,7 @@ public:
         searchPath->setText(QApplication::translate("MainWindow", "Search", Q_NULLPTR));
         label->setText(QApplication::translate("MainWindow", "Select COM port:", Q_NULLPTR));
         getStatus->setText(QApplication::translate("MainWindow", "Get status", Q_NULLPTR));
+        label_3->setText(QApplication::translate("MainWindow", "Protocol:", Q_NULLPTR));
         label_2->setText(QApplication::translate("MainWindow", "Page size:", Q_NULLPTR));
         flashButton->setText(QApplication::translate("MainWindow", "Flash!", Q_NULLPTR));
     } // retranslateUi
