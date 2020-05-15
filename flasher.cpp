@@ -28,6 +28,7 @@ bool Flasher::openSerialPort(QString port_name)
             serial->setDataBits(QSerialPort::Data8);
             serial->setParity(QSerialPort::NoParity);
             serial->setStopBits(QSerialPort::OneStop);
+            //serial->setRequestToSend(true);
 
             if (serial->open(QIODevice::ReadWrite)) {
                 //success connected
@@ -381,10 +382,19 @@ bool Flasher::go_boot(int mode) {
     }
 
     if (this->protocol_type == CAN_STYLE_PROTO) {
-        uint8_t data[] = {0x0F, 0x42, 0xBD, 0xF2, 0x1C};
-        serial->write((char*)data,5);
-        //char data[] = {'F'};
-        //serial->write((char*)data,1);
+        qDebug() << "syncing...";
+        char data_[] = {'F'};
+        serial->write((char*)data_,1);
+        serial->waitForBytesWritten(10000);
+        while(serial->waitForReadyRead(10000));
+        qDebug() << serial->readAll();
+
+        qDebug() << "send command...";
+        // table 0x01 - config table
+        // table_offset 0x19 - options field in config table
+        //               {      size, type, CANID, table, tbl_offset,   tbl_size, mode,                  crc32}
+        uint8_t data[] = {0x00, 0x08, 0x77,  0x00,  0x01, 0x00, 0x19, 0x00, 0x01, 0x01, 0x4b, 0xe6, 0x8d, 0x87};
+        serial->write((char*)data,14);
         serial->waitForBytesWritten(10000);
     } else {
         char data[] = {0x4F, 0x00, 0x19, 0x01};
@@ -396,17 +406,18 @@ bool Flasher::go_boot(int mode) {
 
     qDebug() << "msg sended...";
 
+
     // На всякий ждем ответ от мк (не дольше 1000мс)
     // Нужно на случай, если входящий буфер не пуст.
     serial->waitForReadyRead(1000);
     qDebug() << "clean input buffer: " << serial->readAll() << " ok";
 
     // Проверка статуса (в бут режиме или нет)
-    QString ret = this->get_status(false);
+    //QString ret = this->get_status(false);
 
     this->closeSerialPort();
     emit changeProgress(0);
-    return (ret != "no data");
+    return true;//(ret != "no data");
 }
 
 /**
