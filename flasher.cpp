@@ -386,7 +386,7 @@ bool Flasher::go_boot(int mode) {
         char data_[] = {'F'};
         serial->write((char*)data_,1);
         serial->waitForBytesWritten(10000);
-        while(serial->waitForReadyRead(10000));
+        while(serial->waitForReadyRead(1000));
         qDebug() << serial->readAll();
 
         qDebug() << "send command...";
@@ -408,15 +408,15 @@ bool Flasher::go_boot(int mode) {
 
     // На всякий ждем ответ от мк (не дольше 1000мс)
     // Нужно на случай, если входящий буфер не пуст.
-    serial->waitForReadyRead(1000);
+    while(serial->waitForReadyRead(1000));
     qDebug() << "clean input buffer: " << serial->readAll() << " ok";
 
     // Проверка статуса (в бут режиме или нет)
-    //QString ret = this->get_status(false);
+    QString ret = this->get_status(false);
 
     this->closeSerialPort();
     emit changeProgress(0);
-    return true;//(ret != "no data");
+    return (ret != "no data");
 }
 
 /**
