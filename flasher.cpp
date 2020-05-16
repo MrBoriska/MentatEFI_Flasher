@@ -335,7 +335,7 @@ bool Flasher::send_checksumm(uint16_t ck1, uint16_t ck2) {
 
     serial->write(data, 4);
     serial->waitForBytesWritten(10000);
-    qDebug() << "msg sended...";
+    qDebug() << "msg sent...";
 
     QByteArray recv;
     while (serial->waitForReadyRead(1000)) {
@@ -404,8 +404,7 @@ bool Flasher::go_boot(int mode) {
         serial->waitForBytesWritten(10000);
     }
 
-    qDebug() << "msg sended...";
-
+    qDebug() << "msg sent...";
 
     // На всякий ждем ответ от мк (не дольше 1000мс)
     // Нужно на случай, если входящий буфер не пуст.
@@ -439,7 +438,7 @@ bool Flasher::leave_boot() {
     char data[] = {0x45};
     serial->write((char*)data,1);
     serial->waitForBytesWritten(10000);
-    qDebug() << "msg sended...";
+    qDebug() << "msg sent...";
 
     // Ждем выхода
     QByteArray recv;
@@ -479,7 +478,7 @@ bool Flasher::erase_chip() {
 
     serial->write((char*)data,1);
     serial->waitForBytesWritten(10000);
-    qDebug() << "msg sended...";
+    qDebug() << "msg sent...";
 
     // Ждем очистки...
     while (serial->waitForReadyRead(10000)) {
@@ -518,7 +517,7 @@ QString Flasher::get_status(bool open_serial) {
                                 // чтобы мк ругнулся на него последним символом в ответе
     serial->write((char*)data,2);
     serial->waitForBytesWritten(10000);
-    qDebug() << "msg sended...";
+    qDebug() << "msg sent...";
 
     QByteArray recv;
     while (serial->waitForReadyRead(2000)) {
