@@ -14,6 +14,7 @@
 
 #include <QDragEnterEvent>
 #include <QMimeData>
+#include <QSettings>
 
 #include <QtSerialPort/QSerialPortInfo>
 
@@ -29,6 +30,11 @@ MainWindow::MainWindow(QWidget *parent) :
     this->connect(flasher, &Flasher::infoWarning, this, &MainWindow::infoWarning);
     this->connect(flasher, &Flasher::infoInfo, this, &MainWindow::infoInfo);
     this->connect(flasher, &Flasher::infoDebug, this, &MainWindow::infoDebug);
+
+    QSettings settings(this);
+    QVariant port_index = settings.value("port_index", 0);
+    QVariant protocol_index = settings.value("protocol_index", 0);
+    QVariant hex_file_path = settings.value("hex_file_path");
 
     // Конфигурирование GUI
     ui->setupUi(this);
@@ -48,6 +54,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Получение списка COM портов
     fillPortsInfo();
+
+    // Установка сохраненных значений
+    ui->comSelector->setCurrentIndex(port_index.toInt());
+    ui->protocolSelector->setCurrentIndex(protocol_index.toInt());
+    ui->filePathEdit->setText(hex_file_path.toString());
 }
 
 MainWindow::~MainWindow()
@@ -84,15 +95,16 @@ void MainWindow::on_searchPath_clicked()
 {
     QString fileName;
     fileName = QFileDialog::getOpenFileName(this,
-        tr("Open hex"), "", tr("Hex file (*.hex)"));
-
-    qDebug() << fileName;
+        tr("Open hex"), ui->filePathEdit->text(), tr("Hex file (*.hex)"));
 
     this->set_flash_file_url(fileName);
 }
 
 void MainWindow::set_flash_file_url(QString filename)
 {
+    QSettings settings(this);
+    settings.setValue("hex_file_path", filename);
+
     ui->filePathEdit->setText(filename);
 
     if (!filename.isEmpty()) {
@@ -250,6 +262,9 @@ void MainWindow::infoDebug(QString info)
 
 void MainWindow::on_comSelector_currentIndexChanged(int index)
 {
+    QSettings settings(this);
+    settings.setValue("port_index", index);
+
     flasher->setPortName(
         ui->comSelector->itemData(index).toList()[0].toString()
     );
@@ -257,6 +272,9 @@ void MainWindow::on_comSelector_currentIndexChanged(int index)
 
 void MainWindow::on_protocolSelector_currentIndexChanged(int index)
 {
+    QSettings settings(this);
+    settings.setValue("protocol_index", index);
+
     flasher->setProtocol(
         ui->protocolSelector->itemData(index).value<Flasher::PROTOCOLS>()
     );
