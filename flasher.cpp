@@ -335,7 +335,7 @@ bool Flasher::send_checksumm(uint16_t ck1, uint16_t ck2) {
 
     serial->write(data, 4);
     serial->waitForBytesWritten(10000);
-    qDebug() << "msg sended...";
+    qDebug() << "msg sent...";
 
     QByteArray recv;
     while (serial->waitForReadyRead(1000)) {
@@ -386,7 +386,7 @@ bool Flasher::go_boot(int mode) {
         char data_[] = {'F'};
         serial->write((char*)data_,1);
         serial->waitForBytesWritten(10000);
-        while(serial->waitForReadyRead(10000));
+        while(serial->waitForReadyRead(1000));
         qDebug() << serial->readAll();
 
         qDebug() << "send command...";
@@ -404,20 +404,19 @@ bool Flasher::go_boot(int mode) {
         serial->waitForBytesWritten(10000);
     }
 
-    qDebug() << "msg sended...";
-
+    qDebug() << "msg sent...";
 
     // На всякий ждем ответ от мк (не дольше 1000мс)
     // Нужно на случай, если входящий буфер не пуст.
-    serial->waitForReadyRead(1000);
+    while(serial->waitForReadyRead(1000));
     qDebug() << "clean input buffer: " << serial->readAll() << " ok";
 
     // Проверка статуса (в бут режиме или нет)
-    //QString ret = this->get_status(false);
+    QString ret = this->get_status(false);
 
     this->closeSerialPort();
     emit changeProgress(0);
-    return true;//(ret != "no data");
+    return (ret != "no data");
 }
 
 /**
@@ -439,7 +438,7 @@ bool Flasher::leave_boot() {
     char data[] = {0x45};
     serial->write((char*)data,1);
     serial->waitForBytesWritten(10000);
-    qDebug() << "msg sended...";
+    qDebug() << "msg sent...";
 
     // Ждем выхода
     QByteArray recv;
@@ -479,7 +478,7 @@ bool Flasher::erase_chip() {
 
     serial->write((char*)data,1);
     serial->waitForBytesWritten(10000);
-    qDebug() << "msg sended...";
+    qDebug() << "msg sent...";
 
     // Ждем очистки...
     while (serial->waitForReadyRead(10000)) {
@@ -518,7 +517,7 @@ QString Flasher::get_status(bool open_serial) {
                                 // чтобы мк ругнулся на него последним символом в ответе
     serial->write((char*)data,2);
     serial->waitForBytesWritten(10000);
-    qDebug() << "msg sended...";
+    qDebug() << "msg sent...";
 
     QByteArray recv;
     while (serial->waitForReadyRead(2000)) {
