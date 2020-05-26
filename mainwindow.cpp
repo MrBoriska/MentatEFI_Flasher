@@ -144,7 +144,14 @@ void MainWindow::on_flashButton_clicked()
         ui->getStatus->setEnabled(true);
         ui->comSelector->setEnabled(true);
 
-        emit infoInfo("Flashed!", "Elapsed time: " + QDateTime::fromMSecsSinceEpoch(timer->elapsed()).toString("mm:ss"));
+        qint64 elapsed = timer->elapsed();
+        qreal speed = flasher->getReadedBytes()/(elapsed/1000);
+
+        emit infoInfo("Flashed!",
+            "Elapsed time: "
+            + QDateTime::fromMSecsSinceEpoch(elapsed).toString("mm:ss") + "\n"
+            + "Speed: " + QString::number(speed) + " bytes/sec"
+        );
 
         // важно!
         delete timer;

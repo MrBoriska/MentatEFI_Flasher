@@ -9,6 +9,7 @@ Flasher::Flasher(QObject *parent) : QObject(parent)
     port_name = "";
     serial = 0;
     protocol_type = OLD_PROTO;
+    readed = 0;
 }
 
 /**
@@ -72,6 +73,10 @@ void Flasher::setProtocol(PROTOCOLS proto)
     this->protocol_type = proto;
 }
 
+qint64 Flasher::getReadedBytes() {
+    return this->readed;
+}
+
 /**
  * @brief Осуществляет запись прошивки в ЭБУ из файла
  * @param file
@@ -79,6 +84,8 @@ void Flasher::setProtocol(PROTOCOLS proto)
 void Flasher::send_flash_from_file(QString hexFilePath, int page_size) {
 
     emit changeProgress(0);
+    this->readed = 0;
+
     this->closeSerialPort();
     if (!this->openSerialPort(this->port_name)) {
         emit changeProgress(0);
@@ -99,7 +106,6 @@ void Flasher::send_flash_from_file(QString hexFilePath, int page_size) {
 
     W2B data;
     uint16_t addressW = 0x0000;
-    qint64 readed = 0;
     qint64 step_bytes = 1;
     uint16_t ck1=0, ck2=0;
     QByteArray temp;

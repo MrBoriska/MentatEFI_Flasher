@@ -28,6 +28,7 @@ public:
 
     void setPortName(QString port_name);
     void setProtocol(PROTOCOLS proto);
+    qint64 getReadedBytes();
 
 public slots:
     bool go_boot(int mode);
@@ -46,6 +47,7 @@ signals:
 private:
     QString port_name;
     PROTOCOLS protocol_type;
+    qint64 readed;
 
     bool send_address(uint16_t addressW);
     bool erase_chip();
