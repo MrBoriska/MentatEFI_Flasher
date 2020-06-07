@@ -50,7 +50,7 @@ private:
     Flasher *flasher;
 
     void fillPortsInfo();
-    void set_flash_file_url(QString filename);
+    void set_flash_file_url(QString filename, bool update_settings=true);
 };
 
 #endif // MAINWINDOW_H

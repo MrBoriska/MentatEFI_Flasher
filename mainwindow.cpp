@@ -62,7 +62,7 @@ MainWindow::MainWindow(QWidget *parent) :
     if (ui->protocolSelector->count() > protocol_index.toInt())
         ui->protocolSelector->setCurrentIndex(protocol_index.toInt());
     if (hex_file_path.isValid() && !hex_file_path.toString().isEmpty())
-        ui->filePathEdit->setText(hex_file_path.toString());
+        this->set_flash_file_url(hex_file_path.toString(), false);
 }
 
 MainWindow::~MainWindow()
@@ -104,10 +104,12 @@ void MainWindow::on_searchPath_clicked()
     this->set_flash_file_url(fileName);
 }
 
-void MainWindow::set_flash_file_url(QString filename)
+void MainWindow::set_flash_file_url(QString filename, bool update_settings)
 {
-    QSettings settings(this);
-    settings.setValue("hex_file_path", filename);
+    if (update_settings) {
+        QSettings settings(this);
+        settings.setValue("hex_file_path", filename);
+    }
 
     ui->filePathEdit->setText(filename);
 
