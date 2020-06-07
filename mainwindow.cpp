@@ -56,9 +56,13 @@ MainWindow::MainWindow(QWidget *parent) :
     fillPortsInfo();
 
     // Установка сохраненных значений
-    ui->comSelector->setCurrentIndex(port_index.toInt());
-    ui->protocolSelector->setCurrentIndex(protocol_index.toInt());
-    ui->filePathEdit->setText(hex_file_path.toString());
+    if (ui->comSelector->count() > port_index.toInt())
+        // todo: необходимо сохранять не номер пункта, а номер порта
+        ui->comSelector->setCurrentIndex(port_index.toInt());
+    if (ui->protocolSelector->count() > protocol_index.toInt())
+        ui->protocolSelector->setCurrentIndex(protocol_index.toInt());
+    if (hex_file_path.isValid() && !hex_file_path.toString().isEmpty())
+        ui->filePathEdit->setText(hex_file_path.toString());
 }
 
 MainWindow::~MainWindow()
