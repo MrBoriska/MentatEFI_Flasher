@@ -22,16 +22,21 @@ public:
       CAN_STYLE_PROTO, OLD_PROTO
     };
 
+    enum BOOT_MODE {
+        NORMAL_MODE, BRIDGE_MODE
+    };
+
     explicit Flasher(QObject *parent = 0);
 
     QSerialPort *serial;
 
     void setPortName(QString port_name);
     void setProtocol(PROTOCOLS proto);
+    void setBootMode(BOOT_MODE boot_mode);
     qint64 getReadedBytes();
 
 public slots:
-    bool go_boot(int mode);
+    bool go_boot();
     bool leave_boot();
     QString get_status(bool open_serial = true);
     void send_flash_from_file(QString hexFilePath, int page_size);
@@ -47,6 +52,7 @@ signals:
 private:
     QString port_name;
     PROTOCOLS protocol_type;
+    BOOT_MODE boot_mode;
     qint64 readed;
 
     bool send_address(uint16_t addressW);
@@ -58,5 +64,6 @@ private:
 };
 
 Q_DECLARE_METATYPE(Flasher::PROTOCOLS)
+Q_DECLARE_METATYPE(Flasher::BOOT_MODE)
 
 #endif // FLASHER_H

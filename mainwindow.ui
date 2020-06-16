@@ -43,6 +43,20 @@
        </widget>
       </item>
       <item>
+       <widget class="QComboBox" name="bootModeSelector">
+        <item>
+         <property name="text">
+          <string>Normal</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Bridge</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
        <widget class="QProgressBar" name="progressBar">
         <property name="maximum">
          <number>100</number>
@@ -201,7 +215,7 @@
      <x>0</x>
      <y>0</y>
      <width>400</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

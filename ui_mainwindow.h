@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created by: Qt User Interface Compiler version 5.9.9
+** Created by: Qt User Interface Compiler version 5.5.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -38,6 +38,7 @@ public:
     QVBoxLayout *verticalLayout;
     QHBoxLayout *horizontalLayout_4;
     QPushButton *bootTriggerButton;
+    QComboBox *bootModeSelector;
     QProgressBar *progressBar;
     QFrame *line;
     QVBoxLayout *verticalLayout_2;
@@ -82,6 +83,11 @@ public:
         bootTriggerButton->setFlat(false);
 
         horizontalLayout_4->addWidget(bootTriggerButton);
+
+        bootModeSelector = new QComboBox(centralWidget);
+        bootModeSelector->setObjectName(QStringLiteral("bootModeSelector"));
+
+        horizontalLayout_4->addWidget(bootModeSelector);
 
         progressBar = new QProgressBar(centralWidget);
         progressBar->setObjectName(QStringLiteral("progressBar"));
@@ -199,7 +205,7 @@ public:
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
         menuBar->setEnabled(false);
-        menuBar->setGeometry(QRect(0, 0, 400, 22));
+        menuBar->setGeometry(QRect(0, 0, 400, 21));
         MainWindow->setMenuBar(menuBar);
         statusBar = new QStatusBar(MainWindow);
         statusBar->setObjectName(QStringLiteral("statusBar"));
@@ -215,15 +221,20 @@ public:
 
     void retranslateUi(QMainWindow *MainWindow)
     {
-        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MEMO ECU Flasher", Q_NULLPTR));
-        bootTriggerButton->setText(QApplication::translate("MainWindow", "Boot mode", Q_NULLPTR));
-        filePathEdit->setPlaceholderText(QApplication::translate("MainWindow", "Path to *.hex flash file", Q_NULLPTR));
-        searchPath->setText(QApplication::translate("MainWindow", "Search", Q_NULLPTR));
-        label->setText(QApplication::translate("MainWindow", "Select COM port:", Q_NULLPTR));
-        getStatus->setText(QApplication::translate("MainWindow", "Get status", Q_NULLPTR));
-        label_3->setText(QApplication::translate("MainWindow", "Protocol:", Q_NULLPTR));
-        label_2->setText(QApplication::translate("MainWindow", "Page size:", Q_NULLPTR));
-        flashButton->setText(QApplication::translate("MainWindow", "Flash!", Q_NULLPTR));
+        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MEMO ECU Flasher", 0));
+        bootTriggerButton->setText(QApplication::translate("MainWindow", "Boot mode", 0));
+        bootModeSelector->clear();
+        bootModeSelector->insertItems(0, QStringList()
+         << QApplication::translate("MainWindow", "Normal", 0)
+         << QApplication::translate("MainWindow", "Bridge", 0)
+        );
+        filePathEdit->setPlaceholderText(QApplication::translate("MainWindow", "Path to *.hex flash file", 0));
+        searchPath->setText(QApplication::translate("MainWindow", "Search", 0));
+        label->setText(QApplication::translate("MainWindow", "Select COM port:", 0));
+        getStatus->setText(QApplication::translate("MainWindow", "Get status", 0));
+        label_3->setText(QApplication::translate("MainWindow", "Protocol:", 0));
+        label_2->setText(QApplication::translate("MainWindow", "Page size:", 0));
+        flashButton->setText(QApplication::translate("MainWindow", "Flash!", 0));
     } // retranslateUi
 
 };

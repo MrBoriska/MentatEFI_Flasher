@@ -194,8 +194,7 @@ void MainWindow::on_bootTriggerButton_clicked(bool checked)
     if (checked) {
         future = QtConcurrent::run(
             flasher,
-            &Flasher::go_boot,
-            0x01
+            &Flasher::go_boot
         );
     } else {
         future = QtConcurrent::run(
@@ -293,6 +292,13 @@ void MainWindow::on_protocolSelector_currentIndexChanged(int index)
     );
 }
 
+void MainWindow::on_bootModeSelector_currentIndexChanged(int index)
+{
+    flasher->setBootMode(
+        ui->bootModeSelector->itemData(index).value<Flasher::BOOT_MODE>()
+    );
+}
+
 void MainWindow::dragEnterEvent(QDragEnterEvent *e)
 {
     if (e->mimeData()->hasUrls()) {
@@ -309,3 +315,4 @@ void MainWindow::dropEvent(QDropEvent *e)
         break;
     }
 }
+

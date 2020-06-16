@@ -73,6 +73,10 @@ void Flasher::setProtocol(PROTOCOLS proto)
     this->protocol_type = proto;
 }
 
+void Flasher::setBootMode(BOOT_MODE boot_mode) {
+    this->boot_mode = boot_mode;
+}
+
 qint64 Flasher::getReadedBytes() {
     return this->readed;
 }
@@ -375,7 +379,7 @@ bool Flasher::send_checksumm(uint16_t ck1, uint16_t ck2) {
  * @brief Входит в режим прошивки
  * @return
  */
-bool Flasher::go_boot(int mode) {
+bool Flasher::go_boot() {
 
     qDebug() << "go boot mode...";
 
@@ -396,16 +400,25 @@ bool Flasher::go_boot(int mode) {
         qDebug() << serial->readAll();
 
         qDebug() << "send command...";
-        // table 0x01 - config table
-        // table_offset 0x19 - options field in config table
-        //               {      size, type, CANID, table, tbl_offset,   tbl_size, mode,                  crc32}
-        uint8_t data[] = {0x00, 0x08, 0x77,  0x00,  0x01, 0x00, 0x19, 0x00, 0x01, 0x01, 0x4b, 0xe6, 0x8d, 0x87};
-        serial->write((char*)data,14);
+        if (this->boot_mode == BRIDGE_MODE) {
+            // table 0x01 - config table
+            // table_offset 0x19 - options field in config table
+            //               {      size, type, CANID, table, tbl_offset,   tbl_size, mode,                  crc32}
+            uint8_t data[] = {0x00, 0x08, 0x77,  0x00,  0x01, 0x00, 0x19, 0x00, 0x01, 0x02, 0xD2, 0xEF, 0xDC, 0x3D};
+            serial->write((char*)data,14);
+        } else {
+            uint8_t data[] = {0x00, 0x08, 0x77,  0x00,  0x01, 0x00, 0x19, 0x00, 0x01, 0x01, 0x4b, 0xe6, 0x8d, 0x87};
+            serial->write((char*)data,14);
+        }
         serial->waitForBytesWritten(10000);
     } else {
         char data[] = {0x4F, 0x00, 0x19, 0x01};
-        if (mode == 0x01 || mode == 0x02)
-            data[3] = mode;
+
+        if (this->boot_mode == BRIDGE_MODE) {
+            data[3] = 0x02;
+        } else {
+            data[3] = 0x01;
+        }
         serial->write((char*)data,4);
         serial->waitForBytesWritten(10000);
     }

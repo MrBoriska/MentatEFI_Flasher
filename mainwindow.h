@@ -42,6 +42,8 @@ private slots:
     void dragEnterEvent(QDragEnterEvent *e);
 
 
+    void on_bootModeSelector_currentIndexChanged(int index);
+
 signals:
     void flashing_command(QString hexFilePath, int page_size);
 
