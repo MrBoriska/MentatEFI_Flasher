@@ -31,10 +31,10 @@ MainWindow::MainWindow(QWidget *parent) :
     this->connect(flasher, &Flasher::infoInfo, this, &MainWindow::infoInfo);
     this->connect(flasher, &Flasher::infoDebug, this, &MainWindow::infoDebug);
 
-    QSettings settings(this);
-    QVariant port_index = settings.value("port_index", 0);
-    QVariant protocol_index = settings.value("protocol_index", 0);
-    QVariant hex_file_path = settings.value("hex_file_path");
+    //QSettings settings(this);
+    //QVariant port_index = settings.value("port_index", 0);
+    //QVariant protocol_index = settings.value("protocol_index", 0);
+    //QVariant hex_file_path = settings.value("hex_file_path");
 
     // Конфигурирование GUI
     ui->setupUi(this);
@@ -56,13 +56,13 @@ MainWindow::MainWindow(QWidget *parent) :
     fillPortsInfo();
 
     // Установка сохраненных значений
-    if (ui->comSelector->count() > port_index.toInt())
-        // todo: необходимо сохранять не номер пункта, а номер порта
-        ui->comSelector->setCurrentIndex(port_index.toInt());
-    if (ui->protocolSelector->count() > protocol_index.toInt())
-        ui->protocolSelector->setCurrentIndex(protocol_index.toInt());
-    if (hex_file_path.isValid() && !hex_file_path.toString().isEmpty())
-        this->set_flash_file_url(hex_file_path.toString(), false);
+    //if (ui->comSelector->count() > port_index.toInt())
+    //    // todo: необходимо сохранять не номер пункта, а номер порта
+    //    ui->comSelector->setCurrentIndex(port_index.toInt());
+    //if (ui->protocolSelector->count() > protocol_index.toInt())
+    //    ui->protocolSelector->setCurrentIndex(protocol_index.toInt());
+    //if (hex_file_path.isValid() && !hex_file_path.toString().isEmpty())
+    //    this->set_flash_file_url(hex_file_path.toString(), false);
 }
 
 MainWindow::~MainWindow()
@@ -107,8 +107,8 @@ void MainWindow::on_searchPath_clicked()
 void MainWindow::set_flash_file_url(QString filename, bool update_settings)
 {
     if (update_settings) {
-        QSettings settings(this);
-        settings.setValue("hex_file_path", filename);
+        //QSettings settings(this);
+        //settings.setValue("hex_file_path", filename);
     }
 
     ui->filePathEdit->setText(filename);
@@ -274,8 +274,8 @@ void MainWindow::infoDebug(QString info)
 
 void MainWindow::on_comSelector_currentIndexChanged(int index)
 {
-    QSettings settings(this);
-    settings.setValue("port_index", index);
+    //QSettings settings(this);
+    //settings.setValue("port_index", index);
 
     flasher->setPortName(
         ui->comSelector->itemData(index).toList()[0].toString()
@@ -284,8 +284,8 @@ void MainWindow::on_comSelector_currentIndexChanged(int index)
 
 void MainWindow::on_protocolSelector_currentIndexChanged(int index)
 {
-    QSettings settings(this);
-    settings.setValue("protocol_index", index);
+    //QSettings settings(this);
+    //settings.setValue("protocol_index", index);
 
     flasher->setProtocol(
         ui->protocolSelector->itemData(index).value<Flasher::PROTOCOLS>()
