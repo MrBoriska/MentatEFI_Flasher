@@ -50,6 +50,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->protocolSelector->addItem("CAN Style", Flasher::CAN_STYLE_PROTO);
     ui->protocolSelector->addItem("Old", Flasher::OLD_PROTO);
 
+    // Режим входа в Boot
+    ui->bootModeSelector->clear();
+    ui->bootModeSelector->addItem("Normal", Flasher::NORMAL_MODE);
+    ui->bootModeSelector->addItem("Bridge", Flasher::BRIDGE_MODE);
+
     setAcceptDrops(true);
 
     // Получение списка COM портов
